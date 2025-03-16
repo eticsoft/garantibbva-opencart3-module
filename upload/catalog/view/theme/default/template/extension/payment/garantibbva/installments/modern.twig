@@ -1,0 +1,291 @@
+<div id="tab-garantibbva-installments" class="tab-pane fade mb-4 gbbva-installment-container" role="tabpanel">
+	<div class="gbbva-installment-tabs">
+		<div class="gbbva-tab-header">
+			{% for family, installment in installments %}
+				<div class="gbbva-tab-item" data-modern-card-target="{{ family }}">
+					<img  height="45" src="https://cdn.paythor.com/assets/cards/{{ family }}.png" alt="{$family|escape:'html':'UTF-8'}" loading="lazy">
+				</div>
+			{% endfor %}
+		</div>
+		<div class="gbbva-tab-content" data-modern-sanalpos-tables>
+			{% for family, installment in installments %}
+				{% if installment is not empty %}
+					<div class="gbbva-tab-pane" data-modern-card-content="{{ family }}">
+						<table class="gbbva-installment-table">
+							<thead>
+								<tr class="">
+									<th class="" width="33.33%">
+										{{ text_installment_count }}
+									</th>
+									<th class="" width="33.33%">
+										{{ text_monthly_payment }}
+									</th>
+									<th class="" width="33.33%">
+										{{ text_total }}
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for installment_count in 1..12 %}
+									{% set rate = null %}
+									{% for i, inst in installment %}
+										{% if i + 1 == installment_count %}
+											{% set rate = inst %}
+										{% endif %}
+									{% endfor %}
+
+									<tr class=" {{ rate is not null ? 'modern-available' : 'modern-unavailable' }}">
+										<td>
+											<span class="modern-installment-count">
+												{{ installment_count }}
+											</span>
+											<span class="modern-installment-text">
+												{{ text_installment }}
+											</span>
+										</td>
+										{% if rate.gateway != 'off' %}
+											{% if installment_count == 1 and rate.buyer_fee_percent == 0 %}
+												{% set total_amount = garantibbva_price %}
+												{% set monthly_payment = total_amount %}
+											{% elseif installment_count != 1 and rate.buyer_fee_percent == 0 %}
+												{% set total_amount = garantibbva_price %}
+												{% set monthly_payment = total_amount / installment_count %}
+											{% else %}
+												{% set total_amount = garantibbva_price * (1 + rate.buyer_fee_percent / 100) %}
+												{% set monthly_payment = total_amount / installment_count %}
+											{% endif %}
+											<td class="modern-monthly-payment">
+												<span class="modern-price">
+													{{ monthly_payment|number_format(2, ',', '.') }}
+													{{ currency }}
+												</span>
+											</td>
+											<td class="modern-total-amount">
+												<span class="modern-price">
+													{{ total_amount|number_format(2, ',', '.') }}
+													{{ currency }}
+												</span>
+											</td>
+										{% else %}
+											<td class="modern-unavailable">-</td>
+											<td class="modern-unavailable">-</td>
+										{% endif %}
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% endif %}
+			{% endfor %}
+		</div>
+	</div>
+	
+	<div class="gbbva-installment-note">
+        <p>{{ text_note }}</p>
+    </div>
+</div>
+
+<style>
+.gbbva-installment-container {
+    font-family: Arial, Helvetica, sans-serif;
+    width: 100%
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    font-size: 1em;
+}
+
+.gbbva-installment-tabs {
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.gbbva-tab-header {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 6px;
+}
+
+.gbbva-tab-item {
+    text-align:center;
+    padding: 6px 8px;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1em;
+}
+
+.gbbva-tab-item:hover {
+    border-color: #adb5bd;
+}
+
+.gbbva-tab-item.active {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.gbbva-tab-content {
+    margin: auto;
+    max-width: 600px;
+    background-color: #fff;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.gbbva-tab-pane {
+    display: none;
+    padding: 8px;
+}
+
+.gbbva-tab-pane.active {
+    display: block;
+}
+
+.gbbva-installment-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1em;
+}
+
+.gbbva-installment-table th,
+.gbbva-installment-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.gbbva-installment-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.gbbva-installment-table tr:last-child td {
+    border-bottom: none;
+}
+
+.gbbva-installment-table tr:hover td {
+    background-color: #f8f9fa;
+}
+
+.gbbva-installment-note {
+    padding-left: 10px;
+    margin-top: 8px;
+    font-size: 1em;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .gbbva-installment-container {
+        padding: 8px;
+        font-size: 13px;
+    }
+    
+    .gbbva-tab-header {
+        grid-template-columns: repeat(2, 1fr);
+        overflow-x: hidden;
+        white-space: normal;
+        padding-bottom: 4px;
+    }
+    
+    .gbbva-tab-item {
+        padding: 4px 8px;
+        font-size: 13px;
+    }
+    
+    .gbbva-installment-table th,
+    .gbbva-installment-table td {
+        padding: 4px 6px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 400px) {
+    .gbbva-tab-header {
+        grid-template-columns: 1fr;
+    }
+}
+
+.garantibbva-logo-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.garantibbva-logo-wrapper div {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 6px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.garantibbva-logo-wrapper div:hover {
+    border-color: #2fb344;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.garantibbva-installment-card-wrapper-active {
+    display: block;
+}
+
+.garantibbva-installment-card-wrapper-inactive {
+    display: none;
+}
+
+.garantibbva-card-family-wrapper-active {
+    border: 1px solid #90EE90;
+    background-color: #F0FFF0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.garantibbva-card-family-wrapper-inactive {
+    border: 1px solid #ddd;
+}
+
+.garantibbva-installment-message-alert {
+    background-color: #ffebeb;
+    color: #cc0000;
+    font-weight: bold;
+    margin-top: 6px;
+    padding: 6px;
+    border-radius: 6px;
+} 
+</style>
+
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function () {
+const firstTable = document.querySelector('[data-modern-card-content]');
+const firstLogo = document.querySelector('[data-modern-card-target]');
+if (firstTable && firstLogo) {
+firstTable.classList.add('active');
+firstLogo.classList.add('active');
+}
+
+document.querySelectorAll('[data-modern-card-target]').forEach(logo => {
+logo.addEventListener('click', function () {
+const targetCard = this.getAttribute('data-modern-card-target');
+
+document.querySelectorAll('[data-modern-card-target]').forEach(el => el.classList.remove('active'));
+document.querySelectorAll('[data-modern-card-content]').forEach(el => el.classList.remove('active'));
+
+this.classList.add('active');
+document.querySelector(`[data-modern-card-content="${targetCard}"]`).classList.add('active');
+});
+});
+});
+</script>
